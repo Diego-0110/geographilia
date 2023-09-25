@@ -8,11 +8,16 @@ import 'maplibre-gl/dist/maplibre-gl.css'
 
 import dataGeoJSON from '@app/api/countries.json'
 const dataLayer = {
-  id: 'data',
+  id: 'data-fills',
   type: 'fill',
   paint: {
-    'fill-color': 'transparent',
-    'fill-opacity': 1
+    'fill-color': '#555555',
+    'fill-opacity': [
+      'case',
+      ['boolean', ['feature-state', 'hover'], false],
+      0.7,
+      0
+    ]
   }
 }
 const dataBorderLayer = {
@@ -23,43 +28,64 @@ const dataBorderLayer = {
     'line-width': 2
   }
 }
-const dataHighlightLayer = {
-  id: 'data-hl',
-  type: 'fill',
-  paint: {
-    'fill-color': '#555555',
-    'fill-opacity': 0.7
-  }
-}
 
 export default function MainMap () {
   const [hoverCountry, setHoverCountry] = useState('')
   const mapRef = useRef()
 
+  const zoomToCountry = (feature) => {
+    // calculate the bounding box of the feature
+    const [minLng, minLat, maxLng, maxLat] = bbox(feature)
+
+    mapRef.current.fitBounds(
+      [
+        [minLng, minLat],
+        [maxLng, maxLat]
+      ],
+      { padding: 40, duration: 1000 }
+    )
+  }
+
   const onClick = (event) => {
     const feature = event.features[0]
     if (feature) {
-      // calculate the bounding box of the feature
-      const [minLng, minLat, maxLng, maxLat] = bbox(feature)
-
-      mapRef.current.fitBounds(
-        [
-          [minLng, minLat],
-          [maxLng, maxLat]
-        ],
-        { padding: 40, duration: 1000 }
-      )
+      zoomToCountry(feature)
     }
   }
   const handleHover = (event) => {
-    const newValue = event.features.length ? event.features[0].properties.ISO_A3 : ''
-    newValue !== hoverCountry && setHoverCountry(newValue)
+    if (event.features.length > 0) {
+      const newValue = event.features.length ? event.features[0].id : ''
+      if (newValue !== hoverCountry) {
+        if (hoverCountry !== '') {
+          mapRef.current.setFeatureState({ source: 'countries', id: hoverCountry },
+            { hover: false })
+        }
+        // console.log(newValue)
+        setHoverCountry(newValue)
+        mapRef.current.setFeatureState({ source: 'countries', id: newValue },
+          { hover: true })
+      }
+    }
   }
-  const filter = useMemo(() => ['in', 'ISO_A3', hoverCountry], [hoverCountry])
+  const handleMouseLeave = (event) => {
+    if (hoverCountry !== '') {
+      mapRef.current.setFeatureState({ source: 'countries', id: hoverCountry },
+        { hover: false })
+    }
+    setHoverCountry('')
+  }
+  // const filter = useMemo(() => ['in', 'ISO_A3', hoverCountry], [hoverCountry])
 
   const handleLoad = (event) => {
-    const countries = dataGeoJSON.features.map((feature) => feature.properties)
-    console.log(countries[Math.floor(Math.random() * countries.length)])
+    // console.log(mapRef.current.getStyle().layers)
+    // console.log(mapRef.current.getSource('countries').serialize())
+    const countries = mapRef.current.getSource('countries').serialize().data.features
+    const randomCountryId = Math.floor(Math.random() * countries.length)
+    const randomCountry = countries[randomCountryId]
+    // console.log(randomCountryId)
+    mapRef.current.setFeatureState({ source: 'countries', id: randomCountryId },
+      { hover: true })
+    zoomToCountry(randomCountry)
   }
   return (
     <Map
@@ -70,9 +96,10 @@ export default function MainMap () {
         zoom: 4
       }}
       style={{ width: '100%', height: '100vh' }}
-      interactiveLayerIds={['data']}
+      interactiveLayerIds={['data-fills']}
       onClick={onClick}
       onMouseMove={handleHover}
+      onMouseLeave={handleMouseLeave}
       onLoad={handleLoad}
       maplibreLogo
       mapStyle="https://demotiles.maplibre.org/style.json"
@@ -81,10 +108,10 @@ export default function MainMap () {
       <FullscreenControl position="top-left" />
       <NavigationControl position="top-left" />
       <ScaleControl />
-      <Source type="geojson" data={dataGeoJSON}>
-        <Layer {...dataLayer} />
-        <Layer beforeId='geolines' {...dataBorderLayer} />
-        <Layer beforeId='geolines' {...dataHighlightLayer} filter={filter}/>
+      <Source id="countries" type="geojson" data={dataGeoJSON} generateId>
+        <Layer beforeId="geolines-label" {...dataLayer} />
+        <Layer beforeId="geolines-label" {...dataBorderLayer} />
+        {/* <Layer beforeId='geolines' {...dataHighlightLayer} filter={filter}/> */}
       </Source>
     </Map>
   )

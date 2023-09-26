@@ -7,6 +7,7 @@ import { useRef, useState, useMemo } from 'react'
 import 'maplibre-gl/dist/maplibre-gl.css'
 
 import dataGeoJSON from '@app/api/countries.json'
+import { Button } from './ui/ui/button'
 const dataLayer = {
   id: 'data-fills',
   type: 'fill',
@@ -74,11 +75,7 @@ export default function MainMap () {
     }
     setHoverCountry('')
   }
-  // const filter = useMemo(() => ['in', 'ISO_A3', hoverCountry], [hoverCountry])
-
-  const handleLoad = (event) => {
-    // console.log(mapRef.current.getStyle().layers)
-    // console.log(mapRef.current.getSource('countries').serialize())
+  const newRandomCountry = (event) => {
     const countries = mapRef.current.getSource('countries').serialize().data.features
     const randomCountryId = Math.floor(Math.random() * countries.length)
     const randomCountry = countries[randomCountryId]
@@ -87,32 +84,43 @@ export default function MainMap () {
       { hover: true })
     zoomToCountry(randomCountry)
   }
+
+  const handleLoad = (event) => {
+    // console.log(mapRef.current.getStyle().layers)
+    // console.log(mapRef.current.getSource('countries').serialize())
+    newRandomCountry(event)
+  }
   return (
-    <Map
-      ref={mapRef}
-      initialViewState={{
-        longitude: -122.4,
-        latitude: 37.8,
-        zoom: 4
-      }}
-      style={{ width: '100%', height: '100vh' }}
-      interactiveLayerIds={['data-fills']}
-      onClick={onClick}
-      onMouseMove={handleHover}
-      onMouseLeave={handleMouseLeave}
-      onLoad={handleLoad}
-      maplibreLogo
-      mapStyle="https://demotiles.maplibre.org/style.json"
-    >
-      <GeolocateControl position="top-left" />
-      <FullscreenControl position="top-left" />
-      <NavigationControl position="top-left" />
-      <ScaleControl />
-      <Source id="countries" type="geojson" data={dataGeoJSON} generateId>
-        <Layer beforeId="geolines-label" {...dataLayer} />
-        <Layer beforeId="geolines-label" {...dataBorderLayer} />
-        {/* <Layer beforeId='geolines' {...dataHighlightLayer} filter={filter}/> */}
-      </Source>
-    </Map>
+    <>
+      <Map
+        ref={mapRef}
+        initialViewState={{
+          longitude: -122.4,
+          latitude: 37.8,
+          zoom: 4
+        }}
+        style={{ width: '100%', height: '100vh' }}
+        interactiveLayerIds={['data-fills']}
+        onClick={onClick}
+        onMouseMove={handleHover}
+        onMouseLeave={handleMouseLeave}
+        onLoad={handleLoad}
+        maplibreLogo
+        mapStyle="https://demotiles.maplibre.org/style.json"
+      >
+        <GeolocateControl position="top-left" />
+        <FullscreenControl position="top-left" />
+        <NavigationControl position="top-left" />
+        <ScaleControl />
+        <Source id="countries" type="geojson" data={dataGeoJSON} generateId>
+          <Layer beforeId="geolines-label" {...dataLayer} />
+          <Layer beforeId="geolines-label" {...dataBorderLayer} />
+          {/* <Layer beforeId='geolines' {...dataHighlightLayer} filter={filter}/> */}
+        </Source>
+      </Map>
+      <Button className="absolute bottom-2 right-2 z-50" onClick={newRandomCountry}>
+        Random Country
+      </Button>
+    </>
   )
 }

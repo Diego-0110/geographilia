@@ -8,7 +8,9 @@ import 'maplibre-gl/dist/maplibre-gl.css'
 
 import dataGeoJSON from '@app/api/countries.json'
 import { Button } from './ui/ui/button'
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from './ui/ui/card'
+import { Card, CardContent, CardHeader, CardTitle } from './ui/ui/card'
+import { Input } from './ui/ui/input'
+import { useForm } from 'react-hook-form'
 const dataLayer = {
   id: 'data-fills',
   type: 'fill',
@@ -34,6 +36,7 @@ const dataBorderLayer = {
 export default function MainMap () {
   const [hoverCountry, setHoverCountry] = useState('')
   const mapRef = useRef()
+  const { register, handleSubmit, watch } = useForm()
 
   const zoomToCountry = (feature) => {
     // calculate the bounding box of the feature
@@ -88,8 +91,12 @@ export default function MainMap () {
 
   const handleLoad = (event) => {
     // console.log(mapRef.current.getStyle().layers)
-    // console.log(mapRef.current.getSource('countries').serialize())
+    console.log(mapRef.current.getSource('countries').serialize())
     newRandomCountry(event)
+  }
+
+  const onSubmit = (data) => {
+    console.log(data)
   }
   return (
     <>
@@ -121,21 +128,22 @@ export default function MainMap () {
           {/* <Layer beforeId='geolines' {...dataHighlightLayer} filter={filter}/> */}
         </Source>
       </Map>
-      <Card className="absolute bottom-2 left-2 z-50">
+      <Card className="absolute top-2 left-2 right-2 z-50 max-w-3xl mx-auto">
         <CardHeader>
-          <CardTitle>Card Title</CardTitle>
-          <CardDescription>Card Description</CardDescription>
+          <CardTitle>Guess the country</CardTitle>
         </CardHeader>
         <CardContent>
-          <p>Card Content</p>
+          <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col items-end gap-2">
+            <Input {...register('country', { required: true })}/>
+            <div className="flex gap-2">
+              <Button variant="secondary" type="button" onClick={newRandomCountry}>
+                Random Country
+              </Button>
+              <Button type="submit">Check</Button>
+            </div>
+          </form>
         </CardContent>
-        <CardFooter>
-          <p>Card Footer</p>
-        </CardFooter>
       </Card>
-      <Button className="absolute bottom-2 right-2 z-50" onClick={newRandomCountry}>
-        Random Country
-      </Button>
     </>
   )
 }

@@ -8,6 +8,7 @@ import 'maplibre-gl/dist/maplibre-gl.css'
 
 import dataGeoJSON from '@app/api/countries.json'
 import { Button } from './ui/ui/button'
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from './ui/ui/card'
 const dataLayer = {
   id: 'data-fills',
   type: 'fill',
@@ -106,18 +107,32 @@ export default function MainMap () {
         onMouseLeave={handleMouseLeave}
         onLoad={handleLoad}
         maplibreLogo
-        mapStyle="https://demotiles.maplibre.org/style.json"
+        // mapStyle="https://demotiles.maplibre.org/style.json"
       >
         <GeolocateControl position="top-left" />
         <FullscreenControl position="top-left" />
         <NavigationControl position="top-left" />
         <ScaleControl />
         <Source id="countries" type="geojson" data={dataGeoJSON} generateId>
-          <Layer beforeId="geolines-label" {...dataLayer} />
-          <Layer beforeId="geolines-label" {...dataBorderLayer} />
+          <Layer {...dataLayer} />
+          <Layer {...dataBorderLayer} />
+          {/* <Layer beforeId="geolines-label" {...dataLayer} />
+          <Layer beforeId="geolines-label" {...dataBorderLayer} /> */}
           {/* <Layer beforeId='geolines' {...dataHighlightLayer} filter={filter}/> */}
         </Source>
       </Map>
+      <Card className="absolute bottom-2 left-2 z-50">
+        <CardHeader>
+          <CardTitle>Card Title</CardTitle>
+          <CardDescription>Card Description</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <p>Card Content</p>
+        </CardContent>
+        <CardFooter>
+          <p>Card Footer</p>
+        </CardFooter>
+      </Card>
       <Button className="absolute bottom-2 right-2 z-50" onClick={newRandomCountry}>
         Random Country
       </Button>

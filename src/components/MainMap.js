@@ -22,6 +22,8 @@ const dataLayer = {
       '#f75c5c',
       ['==', ['feature-state', 'answer'], 'correct'],
       '#75ff70',
+      ['==', ['feature-state', 'current'], true],
+      '#2d72e0',
       '#555555'
     ],
     'fill-opacity': [
@@ -29,6 +31,8 @@ const dataLayer = {
       ['boolean', ['feature-state', 'hover'], false],
       0.7,
       ['!=', ['feature-state', 'answer'], null],
+      1,
+      ['==', ['feature-state', 'current'], true],
       1,
       0
     ]
@@ -46,7 +50,9 @@ const dataBorderLayer = {
 export default function MainMap () {
   const [hoverCountry, setHoverCountry] = useState('')
   const [officialCountries, setOfficialCountries] = useState([])
-  const [currentCountry, setCurrentCountry] = useState({})
+  const [remainCountries, setRemainCountries] = useState([])
+  const [currentCountry, setCurrentCountry] = useState(null)
+  const [answers, setAnswers] = useState({})
   const mapRef = useRef()
   const { register, handleSubmit, watch } = useForm()
 
@@ -92,18 +98,27 @@ export default function MainMap () {
     setHoverCountry('')
   }
   const newRandomCountry = () => {
-    if (officialCountries < 1) {
+    if (officialCountries.length < 1) {
       return
     }
-    const randomCountryId = Math.floor(Math.random() * officialCountries.length)
-    const randomCountry = officialCountries[randomCountryId]
-    // console.log(randomCountryId)
+    const randomCountryId = remainCountries[Math.floor(Math.random() * remainCountries.length)]
+    const randomCountry = officialCountries.find(item => item.id === randomCountryId)
+    console.log(randomCountryId)
+    console.log(remainCountries)
+    if (currentCountry?.id !== undefined) {
+      mapRef.current.setFeatureState({ source: 'countries', id: currentCountry.id },
+        { current: false })
+    }
+    console.log(answers)
+    if (Object.keys(answers).includes(currentCountry?.id)) {
+      setRemainCountries(remainCountries.filter(item => item !== randomCountry.id))
+    }
     setCurrentCountry({
       id: randomCountry.id,
       code: randomCountry.properties.iso_3166_1_alpha_2_codes
     })
     mapRef.current.setFeatureState({ source: 'countries', id: randomCountry.id },
-      { hover: true })
+      { current: true })
     zoomToCountry(randomCountry)
   }
 
@@ -114,21 +129,35 @@ export default function MainMap () {
       return { id: index, ...feat }
     })
     const states = features.filter(feat => {
-      return feat.properties.iso_3166_1_alpha_2_codes
+      return feat.properties.iso_3166_1_alpha_2_codes && feat.properties.status === 'Member State'
     })
     setOfficialCountries(states)
+    setRemainCountries(states.map(feat => feat.id))
     console.log(states)
     // newRandomCountry()
   }
 
   const onSubmit = (data) => {
+    if (currentCountry === null) {
+      return
+    }
     const regionNames = new Intl.DisplayNames(['en'], { type: 'region' })
     const currentCountryName = regionNames.of(currentCountry.code || '')
     console.log(currentCountryName)
     console.log(data.country === currentCountryName)
+    const validation = (data.country === currentCountryName) ? 'correct' : 'wrong'
     mapRef.current.setFeatureState({ source: 'countries', id: currentCountry.id },
-      { answer: (data.country === currentCountryName) ? 'correct' : 'wrong' })
+      { answer: validation })
+    setAnswers({ ...answers, [String(currentCountry.id)]: { validation, answer: data.country } })
   }
+  const totalAnswersPercent = useMemo(() => {
+    return Object.keys(answers).length / officialCountries.length * 100
+  }, [answers, officialCountries])
+  const wrongAnswersPercent = useMemo(() => {
+    const wrongNum = Object.keys(answers).filter(key => answers[key].validation === 'wrong').length
+    return wrongNum / officialCountries.length * 100
+  }, [answers, officialCountries])
+
   return (
     <>
       <Map
@@ -159,8 +188,8 @@ export default function MainMap () {
         <CardHeader className="gap-2">
           {/* <CardTitle>Guess the country</CardTitle> */}
           <div className="relative">
-            <Progress value={50} />
-            <Progress value={25} className="absolute top-0 bg-transparent"
+            <Progress value={totalAnswersPercent} />
+            <Progress value={wrongAnswersPercent} className="absolute top-0 bg-transparent"
               subClassName="bg-destructive"/>
           </div>
         </CardHeader>

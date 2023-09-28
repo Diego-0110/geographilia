@@ -11,15 +11,25 @@ import { Button } from './ui/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from './ui/ui/card'
 import { Input } from './ui/ui/input'
 import { useForm } from 'react-hook-form'
+import { Progress } from './ui/ui/progress'
 const dataLayer = {
   id: 'data-fills',
   type: 'fill',
   paint: {
-    'fill-color': '#555555',
+    'fill-color': [
+      'case',
+      ['==', ['feature-state', 'answer'], 'wrong'],
+      '#f75c5c',
+      ['==', ['feature-state', 'answer'], 'correct'],
+      '#75ff70',
+      '#555555'
+    ],
     'fill-opacity': [
       'case',
       ['boolean', ['feature-state', 'hover'], false],
       0.7,
+      ['!=', ['feature-state', 'answer'], null],
+      1,
       0
     ]
   }
@@ -35,6 +45,8 @@ const dataBorderLayer = {
 
 export default function MainMap () {
   const [hoverCountry, setHoverCountry] = useState('')
+  const [officialCountries, setOfficialCountries] = useState([])
+  const [currentCountry, setCurrentCountry] = useState({})
   const mapRef = useRef()
   const { register, handleSubmit, watch } = useForm()
 
@@ -47,7 +59,7 @@ export default function MainMap () {
         [minLng, minLat],
         [maxLng, maxLat]
       ],
-      { padding: 40, duration: 1000 }
+      { padding: 100, duration: 1000 }
     )
   }
 
@@ -79,24 +91,43 @@ export default function MainMap () {
     }
     setHoverCountry('')
   }
-  const newRandomCountry = (event) => {
-    const countries = mapRef.current.getSource('countries').serialize().data.features
-    const randomCountryId = Math.floor(Math.random() * countries.length)
-    const randomCountry = countries[randomCountryId]
+  const newRandomCountry = () => {
+    if (officialCountries < 1) {
+      return
+    }
+    const randomCountryId = Math.floor(Math.random() * officialCountries.length)
+    const randomCountry = officialCountries[randomCountryId]
     // console.log(randomCountryId)
-    mapRef.current.setFeatureState({ source: 'countries', id: randomCountryId },
+    setCurrentCountry({
+      id: randomCountry.id,
+      code: randomCountry.properties.iso_3166_1_alpha_2_codes
+    })
+    mapRef.current.setFeatureState({ source: 'countries', id: randomCountry.id },
       { hover: true })
     zoomToCountry(randomCountry)
   }
 
   const handleLoad = (event) => {
     // console.log(mapRef.current.getStyle().layers)
-    console.log(mapRef.current.getSource('countries').serialize())
-    newRandomCountry(event)
+    let features = mapRef.current.getSource('countries').serialize().data.features
+    features = features.map((feat, index) => {
+      return { id: index, ...feat }
+    })
+    const states = features.filter(feat => {
+      return feat.properties.iso_3166_1_alpha_2_codes
+    })
+    setOfficialCountries(states)
+    console.log(states)
+    // newRandomCountry()
   }
 
   const onSubmit = (data) => {
-    console.log(data)
+    const regionNames = new Intl.DisplayNames(['en'], { type: 'region' })
+    const currentCountryName = regionNames.of(currentCountry.code || '')
+    console.log(currentCountryName)
+    console.log(data.country === currentCountryName)
+    mapRef.current.setFeatureState({ source: 'countries', id: currentCountry.id },
+      { answer: (data.country === currentCountryName) ? 'correct' : 'wrong' })
   }
   return (
     <>
@@ -114,7 +145,6 @@ export default function MainMap () {
         onMouseLeave={handleMouseLeave}
         onLoad={handleLoad}
         maplibreLogo
-        // mapStyle="https://demotiles.maplibre.org/style.json"
       >
         <GeolocateControl position="top-left" />
         <FullscreenControl position="top-left" />
@@ -123,14 +153,16 @@ export default function MainMap () {
         <Source id="countries" type="geojson" data={dataGeoJSON} generateId>
           <Layer {...dataLayer} />
           <Layer {...dataBorderLayer} />
-          {/* <Layer beforeId="geolines-label" {...dataLayer} />
-          <Layer beforeId="geolines-label" {...dataBorderLayer} /> */}
-          {/* <Layer beforeId='geolines' {...dataHighlightLayer} filter={filter}/> */}
         </Source>
       </Map>
       <Card className="absolute top-2 left-2 right-2 z-50 max-w-3xl mx-auto">
-        <CardHeader>
-          <CardTitle>Guess the country</CardTitle>
+        <CardHeader className="gap-2">
+          {/* <CardTitle>Guess the country</CardTitle> */}
+          <div className="relative">
+            <Progress value={50} />
+            <Progress value={25} className="absolute top-0 bg-transparent"
+              subClassName="bg-destructive"/>
+          </div>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col items-end gap-2">

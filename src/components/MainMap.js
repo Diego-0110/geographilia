@@ -22,22 +22,20 @@ const dataLayer = {
     'fill-color': [
       'case',
       ['==', ['feature-state', 'answer'], 'wrong'],
-      '#f75c5c',
+      '#f87171',
       ['==', ['feature-state', 'answer'], 'correct'],
-      '#75ff70',
+      '#4ade80',
       ['==', ['feature-state', 'current'], true],
-      '#2d72e0',
-      '#555555'
+      '#60a5fa',
+      ['==', ['feature-state', 'hover'], true],
+      '#a1a1aa',
+      '#f4f4f5'
     ],
     'fill-opacity': [
       'case',
       ['boolean', ['feature-state', 'hover'], false],
       0.7,
-      ['!=', ['feature-state', 'answer'], null],
-      1,
-      ['==', ['feature-state', 'current'], true],
-      1,
-      0
+      1
     ]
   }
 }
@@ -47,6 +45,14 @@ const dataBorderLayer = {
   paint: {
     'line-color': '#555555',
     'line-width': 2
+  }
+}
+
+const badgesLayer = {
+  id: 'badges',
+  type: 'symbol',
+  paint: {
+    'icon-size': ['interpolate', ['linear'], ['zoom'], 10, 1, 15, 0.5]
   }
 }
 
@@ -185,7 +191,8 @@ export default function MainMap () {
           latitude: 37.8,
           zoom: 4
         }}
-        style={{ width: '100%', height: '100vh' }}
+        className="bg-cyan-500"
+        style={{ width: '100%', height: '100vh', backgroundColor: 'rgb(186 230 253)' }}
         interactiveLayerIds={['data-fills']}
         onClick={onClick}
         onMouseMove={handleHover}
@@ -203,8 +210,8 @@ export default function MainMap () {
           const { lon, lat } = countriesCoords[String(id)]
           const additionalStyles = answers[id].validation === 'wrong' ? ' bg-sky-600' : ''
           return (
-            <Marker key={id} longitude={lon} latitude={lat} anchor="center">
-              <div className="flex flex-col gap-1 items-center group/marker">
+            <Marker key={id} longitude={lon} latitude={lat} anchor="center" className="group/marker relative z-0 hover:z-40">
+              <div className="flex flex-col gap-1 items-center">
                 <Badge className={'text-sm group-hover/marker:text-base' + additionalStyles}>{answers[id].correctAnswer}</Badge>
                 {answers[id].validation === 'wrong' &&
                 <Badge className="line-through decoration-current bg-destructive text-sm group-hover/marker:text-base">{answers[id].answer}</Badge>}

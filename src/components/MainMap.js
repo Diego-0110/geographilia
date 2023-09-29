@@ -1,8 +1,9 @@
 import {
-  Map, GeolocateControl, FullscreenControl, NavigationControl,
+  Map, NavigationControl, Marker,
   ScaleControl, Source, Layer
 } from 'react-map-gl/maplibre'
 import bbox from '@turf/bbox'
+import area from '@turf/area'
 import { useRef, useState, useMemo } from 'react'
 import 'maplibre-gl/dist/maplibre-gl.css'
 
@@ -13,6 +14,7 @@ import { Input } from './ui/ui/input'
 import { useForm } from 'react-hook-form'
 import { Progress } from './ui/ui/progress'
 import { FilledCircle } from './icons'
+import { Badge } from './ui/ui/badge'
 const dataLayer = {
   id: 'data-fills',
   type: 'fill',
@@ -53,6 +55,7 @@ export default function MainMap () {
   const [officialCountries, setOfficialCountries] = useState([])
   const [remainCountries, setRemainCountries] = useState([])
   const [currentCountry, setCurrentCountry] = useState(null)
+  const [countriesCoords, setCountriesCoords] = useState({})
   const [answers, setAnswers] = useState({})
   const mapRef = useRef()
   const { register, handleSubmit, watch } = useForm()
@@ -133,6 +136,12 @@ export default function MainMap () {
       return feat.properties.iso_3166_1_alpha_2_codes && feat.properties.status === 'Member State' &&
         feat.properties.continent === 'Europe'
     })
+    const newCountriesCoords = {}
+    states.forEach(feat => {
+      newCountriesCoords[String(feat.id)] = feat.properties.geo_point_2d
+    })
+    console.log(newCountriesCoords)
+    setCountriesCoords(newCountriesCoords)
     setOfficialCountries(states)
     setRemainCountries(states.map(feat => feat.id))
     console.log(states)
@@ -150,7 +159,11 @@ export default function MainMap () {
     const validation = (data.country === currentCountryName) ? 'correct' : 'wrong'
     mapRef.current.setFeatureState({ source: 'countries', id: currentCountry.id },
       { answer: validation })
-    setAnswers({ ...answers, [String(currentCountry.id)]: { validation, answer: data.country } })
+    setAnswers({
+      ...answers,
+      [String(currentCountry.id)]:
+      { validation, answer: data.country, correctAnswer: currentCountryName }
+    })
   }
 
   const totalAnswers = useMemo(() => Object.keys(answers).length, [answers])
@@ -186,6 +199,19 @@ export default function MainMap () {
           <Layer {...dataLayer} />
           <Layer {...dataBorderLayer} />
         </Source>
+        {Object.keys(answers).map(id => {
+          const { lon, lat } = countriesCoords[String(id)]
+          const additionalStyles = answers[id].validation === 'wrong' ? ' bg-sky-600' : ''
+          return (
+            <Marker key={id} longitude={lon} latitude={lat} anchor="center">
+              <div className="flex flex-col gap-1 items-center group/marker">
+                <Badge className={'text-sm group-hover/marker:text-base' + additionalStyles}>{answers[id].correctAnswer}</Badge>
+                {answers[id].validation === 'wrong' &&
+                <Badge className="line-through decoration-current bg-destructive text-sm group-hover/marker:text-base">{answers[id].answer}</Badge>}
+              </div>
+            </Marker>
+          )
+        })}
       </Map>
       <div className="absolute top-2 left-2 right-2 z-50 pr-10">
         <Card className="max-w-3xl mx-auto">
@@ -202,13 +228,13 @@ export default function MainMap () {
             </div>
           </CardHeader>
           <CardContent>
-            <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col items-end gap-2">
+            <form onSubmit={handleSubmit(onSubmit)} className="flex max-sm:flex-col items-end gap-2">
               <Input {...register('country', { required: true })}/>
-              <div className="flex gap-2">
+              <div className="flex flex-shrink-0 gap-2">
+                <Button type="submit">Check</Button>
                 <Button variant="secondary" type="button" onClick={newRandomCountry}>
                   Random Country
                 </Button>
-                <Button type="submit">Check</Button>
               </div>
             </form>
           </CardContent>

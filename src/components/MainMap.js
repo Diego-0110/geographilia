@@ -12,6 +12,7 @@ import { Card, CardContent, CardHeader, CardTitle } from './ui/ui/card'
 import { Input } from './ui/ui/input'
 import { useForm } from 'react-hook-form'
 import { Progress } from './ui/ui/progress'
+import { FilledCircle } from './icons'
 const dataLayer = {
   id: 'data-fills',
   type: 'fill',
@@ -110,7 +111,7 @@ export default function MainMap () {
         { current: false })
     }
     console.log(answers)
-    if (Object.keys(answers).includes(currentCountry?.id)) {
+    if (Object.keys(answers).includes(String(currentCountry?.id))) {
       setRemainCountries(remainCountries.filter(item => item !== randomCountry.id))
     }
     setCurrentCountry({
@@ -129,7 +130,8 @@ export default function MainMap () {
       return { id: index, ...feat }
     })
     const states = features.filter(feat => {
-      return feat.properties.iso_3166_1_alpha_2_codes && feat.properties.status === 'Member State'
+      return feat.properties.iso_3166_1_alpha_2_codes && feat.properties.status === 'Member State' &&
+        feat.properties.continent === 'Europe'
     })
     setOfficialCountries(states)
     setRemainCountries(states.map(feat => feat.id))
@@ -150,13 +152,16 @@ export default function MainMap () {
       { answer: validation })
     setAnswers({ ...answers, [String(currentCountry.id)]: { validation, answer: data.country } })
   }
+
+  const totalAnswers = useMemo(() => Object.keys(answers).length, [answers])
   const totalAnswersPercent = useMemo(() => {
-    return Object.keys(answers).length / officialCountries.length * 100
-  }, [answers, officialCountries])
+    return totalAnswers / officialCountries.length * 100
+  }, [totalAnswers, officialCountries])
+  const wrongAnswers = useMemo(() =>
+    Object.keys(answers).filter(key => answers[key].validation === 'wrong').length, [answers])
   const wrongAnswersPercent = useMemo(() => {
-    const wrongNum = Object.keys(answers).filter(key => answers[key].validation === 'wrong').length
-    return wrongNum / officialCountries.length * 100
-  }, [answers, officialCountries])
+    return wrongAnswers / officialCountries.length * 100
+  }, [wrongAnswers, officialCountries])
 
   return (
     <>
@@ -175,36 +180,40 @@ export default function MainMap () {
         onLoad={handleLoad}
         maplibreLogo
       >
-        <GeolocateControl position="top-left" />
-        <FullscreenControl position="top-left" />
-        <NavigationControl position="top-left" />
+        <NavigationControl position="top-right" />
         <ScaleControl />
         <Source id="countries" type="geojson" data={dataGeoJSON} generateId>
           <Layer {...dataLayer} />
           <Layer {...dataBorderLayer} />
         </Source>
       </Map>
-      <Card className="absolute top-2 left-2 right-2 z-50 max-w-3xl mx-auto">
-        <CardHeader className="gap-2">
-          {/* <CardTitle>Guess the country</CardTitle> */}
-          <div className="relative">
-            <Progress value={totalAnswersPercent} />
-            <Progress value={wrongAnswersPercent} className="absolute top-0 bg-transparent"
-              subClassName="bg-destructive"/>
-          </div>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col items-end gap-2">
-            <Input {...register('country', { required: true })}/>
-            <div className="flex gap-2">
-              <Button variant="secondary" type="button" onClick={newRandomCountry}>
-                Random Country
-              </Button>
-              <Button type="submit">Check</Button>
+      <div className="absolute top-2 left-2 right-2 z-50 pr-10">
+        <Card className="max-w-3xl mx-auto">
+          <CardHeader className="pb-3">
+            <p className="flex gap-3 text-sm px-2 font-normal">
+              <span className="flex gap-1 text-primary">{totalAnswers - wrongAnswers} <FilledCircle size={16} /></span>
+              <span className="flex gap-1 text-destructive">{wrongAnswers} <FilledCircle size={16} /></span>
+              <span className="text-[#2d72e0]">{totalAnswers} / {officialCountries.length}</span>
+            </p>
+            <div className="relative">
+              <Progress value={totalAnswersPercent} />
+              <Progress value={wrongAnswersPercent} className="absolute top-0 bg-transparent"
+                subClassName="bg-destructive"/>
             </div>
-          </form>
-        </CardContent>
-      </Card>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col items-end gap-2">
+              <Input {...register('country', { required: true })}/>
+              <div className="flex gap-2">
+                <Button variant="secondary" type="button" onClick={newRandomCountry}>
+                  Random Country
+                </Button>
+                <Button type="submit">Check</Button>
+              </div>
+            </form>
+          </CardContent>
+        </Card>
+      </div>
     </>
   )
 }

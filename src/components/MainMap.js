@@ -15,6 +15,7 @@ import { useForm } from 'react-hook-form'
 import { Progress } from './ui/ui/progress'
 import { FilledCircle } from './icons'
 import { Badge } from './ui/ui/badge'
+import AnswerPanel from './AnswerPanel'
 const dataLayer = {
   id: 'data-fills',
   type: 'fill',
@@ -221,31 +222,8 @@ export default function MainMap () {
         })}
       </Map>
       <div className="absolute top-2 left-2 right-2 z-50 pr-10">
-        <Card className="max-w-3xl mx-auto">
-          <CardHeader className="pb-3">
-            <p className="flex gap-3 text-sm px-2 font-normal">
-              <span className="flex gap-1 text-primary">{totalAnswers - wrongAnswers} <FilledCircle size={16} /></span>
-              <span className="flex gap-1 text-destructive">{wrongAnswers} <FilledCircle size={16} /></span>
-              <span className="text-[#2d72e0]">{totalAnswers} / {officialCountries.length}</span>
-            </p>
-            <div className="relative">
-              <Progress value={totalAnswersPercent} />
-              <Progress value={wrongAnswersPercent} className="absolute top-0 bg-transparent"
-                subClassName="bg-destructive"/>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <form onSubmit={handleSubmit(onSubmit)} className="flex max-sm:flex-col items-end gap-2">
-              <Input {...register('country', { required: true })}/>
-              <div className="flex flex-shrink-0 gap-2">
-                <Button type="submit">Check</Button>
-                <Button variant="secondary" type="button" onClick={newRandomCountry}>
-                  Random Country
-                </Button>
-              </div>
-            </form>
-          </CardContent>
-        </Card>
+        <AnswerPanel answered={totalAnswers} wrong={wrongAnswers} total={officialCountries.length}
+          onSubmit={onSubmit} onClick={newRandomCountry} handleSubmit={handleSubmit} register={register}/>
       </div>
     </>
   )

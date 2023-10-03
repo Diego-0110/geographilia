@@ -8,12 +8,7 @@ import { useRef, useState, useMemo } from 'react'
 import 'maplibre-gl/dist/maplibre-gl.css'
 
 import dataGeoJSON from '@app/api/countries.json'
-import { Button } from './ui/ui/button'
-import { Card, CardContent, CardHeader, CardTitle } from './ui/ui/card'
-import { Input } from './ui/ui/input'
 import { useForm } from 'react-hook-form'
-import { Progress } from './ui/ui/progress'
-import { FilledCircle } from './icons'
 import { Badge } from './ui/ui/badge'
 import AnswerPanel from './AnswerPanel'
 const dataLayer = {
@@ -134,6 +129,7 @@ export default function MainMap () {
   }
 
   const handleLoad = (event) => {
+    console.log('IDLE')
     // console.log(mapRef.current.getStyle().layers)
     let features = mapRef.current.getSource('countries').serialize().data.features
     features = features.map((feat, index) => {
@@ -174,14 +170,9 @@ export default function MainMap () {
   }
 
   const totalAnswers = useMemo(() => Object.keys(answers).length, [answers])
-  const totalAnswersPercent = useMemo(() => {
-    return totalAnswers / officialCountries.length * 100
-  }, [totalAnswers, officialCountries])
   const wrongAnswers = useMemo(() =>
-    Object.keys(answers).filter(key => answers[key].validation === 'wrong').length, [answers])
-  const wrongAnswersPercent = useMemo(() => {
-    return wrongAnswers / officialCountries.length * 100
-  }, [wrongAnswers, officialCountries])
+    Object.keys(answers).filter(key => answers[key].validation === 'wrong').length,
+  [answers])
 
   return (
     <>

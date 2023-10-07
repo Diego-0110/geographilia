@@ -1,4 +1,4 @@
-import { Card, CardContent, CardHeader, CardTitle } from './ui/ui/card'
+import { Card, CardContent, CardHeader } from './ui/ui/card'
 import { Progress } from './ui/ui/progress'
 import { Input } from './ui/ui/input'
 import { Button } from './ui/ui/button'

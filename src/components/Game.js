@@ -22,7 +22,7 @@ export default function Game ({ lang = 'en', continent = 'Europe' }) {
     isMapLoaded,
     nextCountry,
     checkAnsweredCountry
-  } = useGame(mapRef, SOURCE_ID, lang, continent)
+  } = useGame(mapRef, SOURCE_ID, lang, continent, next => zoomToCountry(next))
   const { register, handleSubmit } = useForm()
 
   const zoomToCountry = (feature) => {
@@ -49,7 +49,9 @@ export default function Game ({ lang = 'en', continent = 'Europe' }) {
     const next = nextCountry()
     if (next) {
       zoomToCountry(next)
+      return true
     }
+    return false
   }
 
   const handleLoad = (event) => {
@@ -65,10 +67,6 @@ export default function Game ({ lang = 'en', continent = 'Europe' }) {
       return
     }
     checkAnsweredCountry(data.country)
-    if (hasGameEnded()) {
-      console.log('Game Ended')
-    }
-    newRandomCountry()
   }
 
   const totalAnswers = useMemo(() => Object.keys(answers).length, [answers])
@@ -83,7 +81,7 @@ export default function Game ({ lang = 'en', continent = 'Europe' }) {
         countriesCoords={countriesCoords} />
       <div className="absolute top-2 left-2 right-2 z-50 pr-10">
         <AnswerPanel answered={totalAnswers} wrong={wrongAnswers} total={countriesCount}
-          onSubmit={onSubmit} onClick={newRandomCountry} handleSubmit={handleSubmit} register={register}/>
+          onSubmit={onSubmit} onClick={nextCountry} handleSubmit={handleSubmit} register={register}/>
       </div>
     </>
   )

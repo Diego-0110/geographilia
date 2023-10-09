@@ -3,7 +3,7 @@ import {
   ScaleControl, Source, Layer
 } from 'react-map-gl/maplibre'
 import 'maplibre-gl/dist/maplibre-gl.css'
-import { Badge } from './ui/ui/badge'
+import Badge from './ui/ui/badge'
 
 import dataGeoJSON from '@app/api/countries.json'
 import { countriesFillLayer, countriesLineLayer } from '@constants/gameMapLayers'
@@ -16,9 +16,9 @@ export default function GameMap ({
     <Map
       ref={mapRef}
       initialViewState={{
-        longitude: -122.4,
-        latitude: 37.8,
-        zoom: 4
+        longitude: 0,
+        latitude: 30,
+        zoom: 2
       }}
       className="bg-cyan-500"
       style={{ width: '100%', height: '100vh', backgroundColor: 'rgb(186 230 253)' }}
@@ -37,18 +37,19 @@ export default function GameMap ({
       </Source>
       {Object.keys(answers).map(id => {
         const { lon, lat } = countriesCoords[String(id)]
-        const additionalStyles = answers[id].validation === 'wrong' ? ' bg-sky-600' : ''
+        const variant = answers[id].validation === 'wrong' ? 'red' : 'green'
         return (
           <Marker key={id} longitude={lon} latitude={lat} anchor="center" className="group/marker relative z-0 hover:z-40">
-            <div className="flex flex-col gap-1 items-center">
-              <Badge className={'text-sm group-hover/marker:text-base' + additionalStyles}>
-                {answers[id].correctAnswer}
+            <div className="absolute -bottom-2 group-hover/marker:bottom-full left-0 right-0 max-w-xs mx-auto flex flex-col gap-1 items-center scale-0 group-hover/marker:scale-100 opacity-0 group-hover/marker:opacity-100 transition-all ease-in-out whitespace-nowrap">
+              <Badge variant={variant}>
+                {answers[id].answer}
               </Badge>
               {answers[id].validation === 'wrong' &&
-                <Badge className="line-through decoration-current bg-destructive text-sm group-hover/marker:text-base">
-                  {answers[id].answer}
+                <Badge className="text-sm px-2 py-0">
+                  {answers[id].correctAnswer}
                 </Badge>}
             </div>
+            <div className="w-5 h-5 rounded-full bg-sky-600 border-2 border-white"></div>
           </Marker>
         )
       })}

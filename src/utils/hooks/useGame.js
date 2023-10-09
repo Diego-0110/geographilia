@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { GAME_STATUS } from '@constants/game'
 
 export function useGame (mapRef, sourceId, lang, continent, nextCountryCallback) {
   const [countries, setCountries] = useState([])
@@ -7,15 +8,16 @@ export function useGame (mapRef, sourceId, lang, continent, nextCountryCallback)
   const [countriesCoords, setCountriesCoords] = useState({})
   const [answers, setAnswers] = useState({})
   // TODO add gameStatus state
+  const [gameStatus, setGameStatus] = useState(GAME_STATUS.waiting)
 
   const regionNames = new Intl.DisplayNames([lang], { type: 'region' })
 
   const hasGameStarted = () => {
-    return currentCountry !== null
+    return gameStatus === GAME_STATUS.playing
   }
 
-  const hasGameEnded = () => {
-    return remainCountries.length < 1
+  const hasGameFinished = () => {
+    return gameStatus === GAME_STATUS.finished
   }
 
   const handleMapLoaded = () => {
@@ -51,6 +53,8 @@ export function useGame (mapRef, sourceId, lang, continent, nextCountryCallback)
     if (currentCountry?.id !== undefined) { // Not first country
       mapRef.current.setFeatureState({ source: 'countries', id: currentCountry.id },
         { current: false })
+    } else {
+      setGameStatus(GAME_STATUS.playing)
     }
     setCurrentCountry({
       id: randomCountryId,
@@ -73,11 +77,11 @@ export function useGame (mapRef, sourceId, lang, continent, nextCountryCallback)
       [String(currentCountry.id)]:
       { validation, answer: answeredCountry, correctAnswer: currentCountryName }
     })
-    if (hasGameEnded()) {
+    const newRemainCountries = remainCountries.filter(item => item !== currentCountry.id)
+    if (newRemainCountries.length < 1) {
+      setGameStatus(GAME_STATUS.finished)
       console.log('Game Ended')
-      // TODO setGameStatus('ended')
     } else {
-      const newRemainCountries = remainCountries.filter(item => item !== currentCountry.id)
       // console.log('new', newRemainCountries)
       setRemainCountries(newRemainCountries)
       nextCountry(newRemainCountries)
@@ -88,8 +92,9 @@ export function useGame (mapRef, sourceId, lang, continent, nextCountryCallback)
     answers,
     countriesCoords,
     countriesCount: countries.length,
+    gameStatus,
     hasGameStarted,
-    hasGameEnded,
+    hasGameFinished,
     handleMapLoaded,
     isMapLoaded,
     nextCountry,

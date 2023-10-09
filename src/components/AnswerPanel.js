@@ -3,20 +3,28 @@ import { Progress } from './ui/ui/progress'
 import { Input } from './ui/ui/input'
 import { Button } from './ui/ui/button'
 import { FilledCircle } from './icons'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
+import { GAME_STATUS } from '@constants/game'
 
-export default function AnswerPanel ({ answered, wrong, total, onSubmit, onClick, handleSubmit, register }) {
+export default function AnswerPanel ({
+  answered, wrong, total, timer, updateTimer, onSubmit, onClick, handleSubmit, register, gameStatus
+}) {
   const answeredPercent = answered / total * 100
   const wrongPercent = wrong / total * 100
-  const [timer, setTimer] = useState(0)
   const [intervalId, setIntervalId] = useState()
 
   const handleSecondaryClick = (evt) => {
     if (!intervalId) {
-      setIntervalId(setInterval(() => setTimer(val => val + 0.1), 100))
+      setIntervalId(setInterval(() => updateTimer(), 100))
     }
     onClick(evt)
   }
+
+  useEffect(() => {
+    if (gameStatus === GAME_STATUS.finished) {
+      clearInterval(intervalId)
+    }
+  }, [gameStatus])
 
   return (
     <Card className="max-w-3xl mx-auto">
@@ -34,15 +42,24 @@ export default function AnswerPanel ({ answered, wrong, total, onSubmit, onClick
         </div>
       </CardHeader>
       <CardContent>
-        <form onSubmit={handleSubmit(onSubmit)} className="flex max-sm:flex-col items-end gap-2">
-          <Input {...register('country', { required: true })}/>
-          <div className="flex flex-shrink-0 gap-2">
-            <Button type="submit">Check</Button>
-            <Button variant="secondary" type="button" onClick={handleSecondaryClick}>
-              Random Country
-            </Button>
-          </div>
-        </form>
+        {gameStatus === GAME_STATUS.finished
+          ? <div className="flex flex-shrink-0 gap-2">
+              <Button type="button">
+                Show results
+              </Button>
+              <Button variant="secondary" type="button">
+                Play again
+              </Button>
+            </div>
+          : <form onSubmit={handleSubmit(onSubmit)} className="flex max-sm:flex-col items-end gap-2">
+              <Input {...register('country', { required: true })}/>
+              <div className="flex flex-shrink-0 gap-2">
+                <Button type="submit">Check</Button>
+                <Button variant="secondary" type="button" onClick={handleSecondaryClick}>
+                  Random Country
+                </Button>
+              </div>
+            </form>}
       </CardContent>
     </Card>
   )

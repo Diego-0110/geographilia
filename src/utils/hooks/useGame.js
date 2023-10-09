@@ -6,6 +6,7 @@ export function useGame (mapRef, sourceId, lang, continent, nextCountryCallback)
   const [currentCountry, setCurrentCountry] = useState(null)
   const [countriesCoords, setCountriesCoords] = useState({})
   const [answers, setAnswers] = useState({})
+  // TODO add gameStatus state
 
   const regionNames = new Intl.DisplayNames([lang], { type: 'region' })
 
@@ -47,17 +48,15 @@ export function useGame (mapRef, sourceId, lang, continent, nextCountryCallback)
     }
     const randomCountryId = remainCountriesParam[Math.floor(Math.random() * remainCountriesParam.length)]
     const randomCountry = countries.find(item => item.id === randomCountryId)
-    // console.log(randomCountryId)
-    // console.log(remainCountries)
     if (currentCountry?.id !== undefined) { // Not first country
       mapRef.current.setFeatureState({ source: 'countries', id: currentCountry.id },
         { current: false })
     }
     setCurrentCountry({
-      id: randomCountry.id,
+      id: randomCountryId,
       code: randomCountry.properties.iso_3166_1_alpha_2_codes
     })
-    mapRef.current.setFeatureState({ source: 'countries', id: randomCountry.id },
+    mapRef.current.setFeatureState({ source: 'countries', id: randomCountryId },
       { current: true })
     nextCountryCallback(randomCountry)
   }
@@ -78,9 +77,10 @@ export function useGame (mapRef, sourceId, lang, continent, nextCountryCallback)
       console.log('Game Ended')
       // TODO setGameStatus('ended')
     } else {
-      const newRemainCoutries = remainCountries.filter(item => item !== currentCountry.id)
-      setRemainCountries(newRemainCoutries)
-      nextCountry(newRemainCoutries)
+      const newRemainCountries = remainCountries.filter(item => item !== currentCountry.id)
+      // console.log('new', newRemainCountries)
+      setRemainCountries(newRemainCountries)
+      nextCountry(newRemainCountries)
     }
   }
 

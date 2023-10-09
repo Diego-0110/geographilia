@@ -81,7 +81,7 @@ export default function Game ({ lang = 'en', continent = 'Europe' }) {
         countriesCoords={countriesCoords} />
       <div className="absolute top-2 left-2 right-2 z-50 pr-10">
         <AnswerPanel answered={totalAnswers} wrong={wrongAnswers} total={countriesCount}
-          onSubmit={onSubmit} onClick={nextCountry} handleSubmit={handleSubmit} register={register}/>
+          onSubmit={onSubmit} onClick={() => nextCountry()} handleSubmit={handleSubmit} register={register}/>
       </div>
     </>
   )

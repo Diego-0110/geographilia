@@ -20,6 +20,9 @@ export default function ResultsPanel ({ wrong, total, time }) {
           <Button variant="secondary" type="button">
             Play again
           </Button>
+          <Button variant="secondary" type="button">
+            Play other game
+          </Button>
         </div>
       </CardContent>
     </Card>

@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { GAME_STATUS } from '@constants/game'
 
-export function useGame (mapRef, sourceId, lang, continent, nextCountryCallback) {
+export function useGame (mapRef, sourceId, lang, continents, nextCountryCallback) {
   const [countries, setCountries] = useState([])
   const [remainCountries, setRemainCountries] = useState([])
   const [currentCountry, setCurrentCountry] = useState(null)
@@ -27,7 +27,7 @@ export function useGame (mapRef, sourceId, lang, continent, nextCountryCallback)
     })
     const states = features.filter(feat => {
       return feat.properties.iso_3166_1_alpha_2_codes && feat.properties.status === 'Member State' &&
-        feat.properties.continent === continent
+        continents.includes(feat.properties.continent)
     })
     const newCountriesCoords = {}
     states.forEach(feat => {

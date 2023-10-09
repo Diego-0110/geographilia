@@ -50,6 +50,9 @@ export default function AnswerPanel ({
               <Button variant="secondary" type="button">
                 Play again
               </Button>
+              <Button variant="secondary" type="button">
+                <a href="/">Play other game</a>
+              </Button>
             </div>
           : <form onSubmit={handleSubmit(onSubmit)} className="flex max-sm:flex-col items-end gap-2">
               <Input {...register('country', { required: true })}/>

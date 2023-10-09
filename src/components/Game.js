@@ -11,7 +11,7 @@ import ResultsPanel from './ResultsPanel'
 
 const SOURCE_ID = 'countries'
 
-export default function Game ({ lang = 'en', continent = 'Europe' }) {
+export default function Game ({ lang = 'en', continents = ['Europe'] }) {
   const mapRef = useRef()
   const [handleHover, handleMouseLeave] = useHoverMap(mapRef, SOURCE_ID)
   const {
@@ -23,7 +23,7 @@ export default function Game ({ lang = 'en', continent = 'Europe' }) {
     isMapLoaded,
     nextCountry,
     checkAnsweredCountry
-  } = useGame(mapRef, SOURCE_ID, lang, continent, next => zoomToCountry(next))
+  } = useGame(mapRef, SOURCE_ID, lang, continents, next => zoomToCountry(next))
   const { register, handleSubmit } = useForm()
   const [timer, setTimer] = useState(0)
 

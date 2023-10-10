@@ -24,7 +24,7 @@ export default function Game ({ lang = 'en', continents = ['Europe'] }) {
     nextCountry,
     checkAnsweredCountry
   } = useGame(mapRef, SOURCE_ID, lang, continents, next => zoomToCountry(next))
-  const { register, handleSubmit } = useForm()
+  const { register, handleSubmit } = useForm() // TODO move to AnserPanel
   const [timer, setTimer] = useState(0)
 
   const zoomToCountry = (feature) => {

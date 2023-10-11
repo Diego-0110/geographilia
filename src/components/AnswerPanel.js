@@ -5,9 +5,10 @@ import { Button } from './ui/ui/button'
 import { FilledCircle } from './icons'
 
 import { useForm } from 'react-hook-form'
+import { GAME_STATUS } from '@constants/game'
 
 export default function AnswerPanel ({
-  answered, wrong, total, timer, onSubmit, onClick, className
+  answered, wrong, total, timer, onSubmit, onClick, className, gameStatus
 }) {
   const { register, handleSubmit } = useForm()
   const answeredPercent = answered / total * 100
@@ -29,15 +30,19 @@ export default function AnswerPanel ({
         </div>
       </CardHeader>
       <CardContent>
-        <form onSubmit={handleSubmit(onSubmit)} className="flex max-sm:flex-col items-end gap-2">
-          <Input {...register('country', { required: true })}/>
-          <div className="flex flex-shrink-0 gap-2">
-            <Button type="submit">Check</Button>
-            <Button variant="secondary" type="button" onClick={onClick}>
-              Random Country
+        {gameStatus === GAME_STATUS.waiting
+          ? <Button className="flex ml-auto" type="button" onClick={onClick}>
+              Start Game
             </Button>
-          </div>
-        </form>
+          : <form onSubmit={handleSubmit(onSubmit)} className="flex max-sm:flex-col items-end gap-2">
+              <Input {...register('country', { required: true })}/>
+              <div className="flex flex-shrink-0 gap-2">
+                <Button type="submit">Check</Button>
+                <Button variant="secondary" type="button" onClick={onClick}>
+                  Random Country
+                </Button>
+              </div>
+            </form>}
       </CardContent>
     </Card>
   )

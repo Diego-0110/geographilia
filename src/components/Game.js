@@ -11,6 +11,7 @@ import ResultsPanel from './ResultsPanel'
 const SOURCE_ID = 'countries'
 
 export default function Game ({ lang = 'en', continents = ['Europe'] }) {
+  // TODO fitBounds based on continents value
   const mapRef = useRef()
   const [handleHover, handleMouseLeave] = useHoverMap(mapRef, SOURCE_ID)
   const {
@@ -48,7 +49,7 @@ export default function Game ({ lang = 'en', continents = ['Europe'] }) {
         [minLng, minLat],
         [maxLng, maxLat]
       ],
-      { padding: 100, duration: 1000 }
+      { padding: 100, duration: 800, maxZoom: 4 }
     )
   }
 
@@ -59,12 +60,14 @@ export default function Game ({ lang = 'en', continents = ['Europe'] }) {
     }
   }
 
-  const handleLoad = (event) => {
+  const handleFirstLoad = (event) => {
     // Countries array is initialized the first time onIdle event is emit
-    if (isMapLoaded()) {
+    if (isMapLoaded() || event.sourceId !== SOURCE_ID || !event.isSourceLoaded) {
       return
     }
+    // console.log(event)
     handleMapLoaded()
+    // TODO Loading of GameMap
   }
 
   const onSubmit = (data) => {
@@ -88,7 +91,7 @@ export default function Game ({ lang = 'en', continents = ['Europe'] }) {
 
   return (
     <>
-      <GameMap mapRef={mapRef} handleClick={handleClick} handleIdle={handleLoad}
+      <GameMap mapRef={mapRef} handleClick={handleClick} handleSourceData={handleFirstLoad}
         handleHover={handleHover} handleMouseLeave={handleMouseLeave} answers={answers}
         countriesCoords={countriesCoords} />
       <div className="absolute top-2 left-2 right-2 z-50 mr-10">
@@ -97,7 +100,7 @@ export default function Game ({ lang = 'en', continents = ['Europe'] }) {
               wrong={wrongAnswers} time={timer} restart={restartGame} />
           : <AnswerPanel className="max-w-3xl mx-auto" answered={totalAnswers}
               wrong={wrongAnswers} total={countriesCount} timer={timer}
-              onSubmit={onSubmit} onClick={handleNextCountry} />}
+              onSubmit={onSubmit} onClick={handleNextCountry} gameStatus={gameStatus} />}
       </div>
     </>
   )

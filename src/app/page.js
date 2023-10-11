@@ -15,7 +15,7 @@ export default function Home () {
   const onSubmit = (data) => {
     console.log(data)
     push(`/country-guesser/${data.countries.join('/')}`)
-    setIsLoading(true)
+    setIsLoading(true) // TODO loading button
   }
   return (
     <main className="flex justify-center items-center w-100 min-h-screen p-3">
@@ -51,7 +51,7 @@ export default function Home () {
             </div>
             <div className="flex justify-end mt-10">
               <Button type="submit">
-                {isLoading ? 'Loading...' : 'Play'}
+                {isLoading ? 'Loading...' : 'Play Game'}
               </Button>
             </div>
           </form>

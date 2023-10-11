@@ -9,7 +9,7 @@ import dataGeoJSON from '@app/api/countries.json'
 import { countriesFillLayer, countriesLineLayer } from '@constants/gameMapLayers'
 
 export default function GameMap ({
-  mapRef, handleClick, handleHover, handleMouseLeave, handleIdle,
+  mapRef, handleClick, handleHover, handleMouseLeave, handleSourceData,
   answers, countriesCoords
 }) {
   return (
@@ -26,7 +26,7 @@ export default function GameMap ({
       onClick={handleClick}
       onMouseMove={handleHover}
       onMouseLeave={handleMouseLeave}
-      onIdle={handleIdle}
+      onSourceData={handleSourceData}
       maplibreLogo
     >
       <NavigationControl position="top-right" />

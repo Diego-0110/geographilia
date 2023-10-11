@@ -4,10 +4,12 @@ import { Input } from './ui/ui/input'
 import { Button } from './ui/ui/button'
 import { FilledCircle } from './icons'
 
+import { useForm } from 'react-hook-form'
+
 export default function AnswerPanel ({
-  answered, wrong, total, timer, onSubmit, onClick, handleSubmit,
-  register, className
+  answered, wrong, total, timer, onSubmit, onClick, className
 }) {
+  const { register, handleSubmit } = useForm()
   const answeredPercent = answered / total * 100
   const wrongPercent = wrong / total * 100
 

@@ -5,14 +5,17 @@ import { Button } from '@components/ui/ui/button'
 
 import { useRouter } from 'next/navigation'
 import CheckBoxLabeled from '@components/ui/ui/CheckboxLabeled'
-// TODO Game Selection Menu
+import { useState } from 'react'
+
 export default function Home () {
   const { push } = useRouter()
   const { register, handleSubmit } = useForm()
+  const [isLoading, setIsLoading] = useState(false)
 
   const onSubmit = (data) => {
     console.log(data)
     push(`/country-guesser/${data.countries.join('/')}`)
+    setIsLoading(true)
   }
   return (
     <main className="flex justify-center items-center w-100 min-h-screen p-3">
@@ -48,7 +51,7 @@ export default function Home () {
             </div>
             <div className="flex justify-end mt-10">
               <Button type="submit">
-                Play
+                {isLoading ? 'Loading...' : 'Play'}
               </Button>
             </div>
           </form>

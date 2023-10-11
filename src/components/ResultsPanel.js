@@ -1,7 +1,7 @@
 import { Card, CardContent, CardHeader } from './ui/ui/card'
 import { Button } from './ui/ui/button'
 
-export default function ResultsPanel ({ wrong, total, time, className }) {
+export default function ResultsPanel ({ wrong, total, time, className, restart }) {
   const correctPercentage = (total - wrong) / total * 100
   return (
     <Card className={className}>
@@ -14,8 +14,8 @@ export default function ResultsPanel ({ wrong, total, time, className }) {
       <CardContent>
 
         <div className="flex flex-shrink-0 gap-2">
-          <Button type="button">
-            <a href="">Play again</a>
+          <Button type="button" onClick={restart}>
+            Play again
           </Button>
           <Button variant="secondary" type="button">
             <a href="/">Play other game</a>

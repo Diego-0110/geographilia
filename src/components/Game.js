@@ -1,7 +1,6 @@
 import bbox from '@turf/bbox'
 import { useRef, useMemo, useState, useEffect } from 'react'
 
-import { useForm } from 'react-hook-form'
 import AnswerPanel from './AnswerPanel'
 import { useHoverMap } from '@utils/hooks/useHoverMap'
 import GameMap from './GameMap'
@@ -19,12 +18,12 @@ export default function Game ({ lang = 'en', continents = ['Europe'] }) {
     countriesCoords,
     countriesCount,
     gameStatus,
+    restart: restartUseGame,
     handleMapLoaded,
     isMapLoaded,
     nextCountry,
     checkAnsweredCountry
   } = useGame(mapRef, SOURCE_ID, lang, continents, next => zoomToCountry(next))
-  const { register, handleSubmit } = useForm() // TODO move to AnserPanel
   const [timer, setTimer] = useState(0)
   const [intervalId, setIntervalId] = useState()
 
@@ -33,6 +32,12 @@ export default function Game ({ lang = 'en', continents = ['Europe'] }) {
       clearInterval(intervalId)
     }
   }, [gameStatus])
+
+  const restartGame = () => {
+    restartUseGame()
+    setTimer(0)
+    setIntervalId(null)
+  }
 
   const zoomToCountry = (feature) => {
     // calculate the bounding box of the feature
@@ -88,11 +93,11 @@ export default function Game ({ lang = 'en', continents = ['Europe'] }) {
         countriesCoords={countriesCoords} />
       <div className="absolute top-2 left-2 right-2 z-50 mr-10">
         {gameStatus === GAME_STATUS.finished
-          ? <ResultsPanel className="max-w-3xl mx-auto" total={countriesCount} wrong={wrongAnswers} time={timer} />
+          ? <ResultsPanel className="max-w-3xl mx-auto" total={countriesCount}
+              wrong={wrongAnswers} time={timer} restart={restartGame} />
           : <AnswerPanel className="max-w-3xl mx-auto" answered={totalAnswers}
               wrong={wrongAnswers} total={countriesCount} timer={timer}
-              onSubmit={onSubmit} onClick={handleNextCountry} handleSubmit={handleSubmit}
-              register={register} gameStatus={gameStatus} />}
+              onSubmit={onSubmit} onClick={handleNextCountry} />}
       </div>
     </>
   )

@@ -7,10 +7,17 @@ export function useGame (mapRef, sourceId, lang, continents, nextCountryCallback
   const [currentCountry, setCurrentCountry] = useState(null)
   const [countriesCoords, setCountriesCoords] = useState({})
   const [answers, setAnswers] = useState({})
-  // TODO add gameStatus state
   const [gameStatus, setGameStatus] = useState(GAME_STATUS.waiting)
 
   const regionNames = new Intl.DisplayNames([lang], { type: 'region' })
+
+  const restart = () => {
+    setRemainCountries(countries.map(feat => feat.id))
+    setCurrentCountry(null)
+    setAnswers({})
+    setGameStatus(GAME_STATUS.waiting)
+    mapRef.current.removeFeatureState({ source: 'countries' })
+  }
 
   const hasGameStarted = () => {
     return gameStatus === GAME_STATUS.playing
@@ -65,7 +72,7 @@ export function useGame (mapRef, sourceId, lang, continents, nextCountryCallback
     nextCountryCallback(randomCountry)
   }
 
-  const checkAnsweredCountry = (answeredCountry, callback) => {
+  const checkAnsweredCountry = (answeredCountry) => {
     const currentCountryName = regionNames.of(currentCountry.code || '')
     console.log(currentCountryName)
     console.log(answeredCountry === currentCountryName)
@@ -93,6 +100,7 @@ export function useGame (mapRef, sourceId, lang, continents, nextCountryCallback
     countriesCoords,
     countriesCount: countries.length,
     gameStatus,
+    restart,
     hasGameStarted,
     hasGameFinished,
     handleMapLoaded,
